@@ -5,6 +5,7 @@ import (
 
 	"github.com/TOPfiIT/vacancy-service/internal/domain/models"
 	"github.com/TOPfiIT/vacancy-service/internal/services"
+	"github.com/TOPfiIT/vacancy-service/pkg/middlewares"
 	"github.com/gin-gonic/gin"
 )
 
@@ -24,6 +25,13 @@ func (h *VacancyHandler) CreateVacancy(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	companyID := middlewares.GetCompanyID(c)
+	if companyID == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "company id not found"})
+		return
+	}
+	req.CompanyID = companyID
 
 	vacancy, err := h.service.CreateVacancy(c.Request.Context(), &req)
 	if err != nil {
@@ -51,9 +59,9 @@ func (h *VacancyHandler) GetVacancy(c *gin.Context) {
 }
 
 func (h *VacancyHandler) GetVacancies(c *gin.Context) {
-	companyID := c.Param("company_id")
+	companyID := middlewares.GetCompanyID(c)
 	if companyID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "empty id"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "company id not found"})
 		return
 	}
 
@@ -87,6 +95,18 @@ func (h *VacancyHandler) GetInterviewResults(c *gin.Context) {
 	vacancyID := c.Param("vacancy_id")
 	if vacancyID == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "empty id"})
+		return
+	}
+
+	companyID := middlewares.GetCompanyID(c)
+	vacancy, err := h.service.GetVacancy(c.Request.Context(), vacancyID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	if vacancy.CompanyID != companyID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "access denied"})
 		return
 	}
 
