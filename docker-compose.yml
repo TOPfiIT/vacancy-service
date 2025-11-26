@@ -1,0 +1,29 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: vacancy_postgres
+    environment:
+      POSTGRES_DB: vacancy_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./config:/config
+      - ./migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  vacancy-service:
+    image: acyushka/vcj-vacancy-service:latest
+    ports:
+      - "8086:8086"
+    depends_on:
+      - postgres
+    volumes:
+      - ./config:/app/config
+    environment:
+      - GIN_MODE=debug
+      - CONFIG_PATH=/app/config/local.yaml
+
+volumes:
+  postgres_data:
