@@ -1,6 +1,9 @@
 package config
 
 import (
+	"crypto/ecdsa"
+	"crypto/x509"
+	"encoding/pem"
 	"fmt"
 	"log"
 	"os"
@@ -12,6 +15,9 @@ import (
 type Config struct {
 	Server   ServerConfig   `yaml:"server"`
 	Database DatabaseConfig `yaml:"database"`
+	JWT      struct {
+		PublicKey string `yaml:"public_key"`
+	} `yaml:"jwt"`
 }
 
 type ServerConfig struct {
@@ -102,4 +108,25 @@ func MustLoad() *Config {
 	}
 
 	return cfg
+}
+
+func (c *Config) GetPublicKey() (*ecdsa.PublicKey, error) {
+	const op = "config.GetPublicKey"
+
+	block, _ := pem.Decode([]byte(c.JWT.PublicKey))
+	if block == nil {
+		return nil, fmt.Errorf("%s: failed to parse PEM block", op)
+	}
+
+	genericPublicKey, err := x509.ParsePKIXPublicKey(block.Bytes)
+	if err != nil {
+		return nil, fmt.Errorf("%s: parse public key: %w", op, err)
+	}
+
+	publicKey, ok := genericPublicKey.(*ecdsa.PublicKey)
+	if !ok {
+		return nil, fmt.Errorf("%s: not an ECDSA public key", op)
+	}
+
+	return publicKey, nil
 }

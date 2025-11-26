@@ -1,9 +1,6 @@
 package main
 
 import (
-	"crypto/ecdsa"
-	"crypto/x509"
-	"encoding/pem"
 	"log"
 
 	"github.com/TOPfiIT/vacancy-service/internal/config"
@@ -17,6 +14,12 @@ import (
 func main() {
 	//init cfg
 	cfg := config.MustLoad()
+
+	publicKey, err := cfg.GetPublicKey()
+	if err != nil {
+		log.Fatalf("Failed to load public key: %v", err)
+	}
+	log.Println("✓ Public key loaded")
 
 	// init postgres
 	repository := db.InitPostgres(cfg)
@@ -37,7 +40,7 @@ func main() {
 	})
 
 	authConfig := middlewares.AuthConfig{
-		PublicKey: getPublicKey(),
+		PublicKey: publicKey,
 	}
 	authMiddleware := middlewares.AuthMiddleware(authConfig)
 
@@ -62,25 +65,4 @@ func main() {
 	if err := r.Run(":8086"); err != nil {
 		log.Fatal(err)
 	}
-}
-
-func getPublicKey() *ecdsa.PublicKey {
-	pemKey := `-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEQy0TSI95s6hkPCFyicGS8oVoAzB7\nyiQhjrsy9KV4QivobyYsb89YxM7BJ+HHGhL83+DcKwRViLm3SlMV6NP/IQ==\n-----END PUBLIC KEY-----`
-
-	block, _ := pem.Decode([]byte(pemKey))
-	if block == nil {
-		log.Fatal("Failed to parse PEM block")
-	}
-
-	pubKey, err := x509.ParsePKIXPublicKey(block.Bytes)
-	if err != nil {
-		log.Fatalf("Failed to parse public key: %v", err)
-	}
-
-	ecdsaPubKey, ok := pubKey.(*ecdsa.PublicKey)
-	if !ok {
-		log.Fatal("Not an ECDSA public key")
-	}
-
-	return ecdsaPubKey
 }

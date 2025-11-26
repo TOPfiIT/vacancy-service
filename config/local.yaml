@@ -9,3 +9,10 @@ database:
   password: password
   dbname: vacancy_db
   sslmode: disable
+
+jwt:
+  public_key: |
+    -----BEGIN PUBLIC KEY-----
+    MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEQy0TSI95s6hkPCFyicGS8oVoAzB7
+    yiQhjrsy9KV4QivobyYsb89YxM7BJ+HHGhL83+DcKwRViLm3SlMV6NP/IQ==
+    -----END PUBLIC KEY-----
