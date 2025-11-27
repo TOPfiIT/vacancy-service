@@ -50,6 +50,7 @@ func main() {
 	{
 		protected.POST("/vacancies", vacancyHandler.CreateVacancy)
 		protected.GET("/vacancies/company", vacancyHandler.GetVacancies)
+		protected.GET("/vacancies/company/:vacancy_id", vacancyHandler.GetVacancyFront)
 		protected.GET("/vacancies/:vacancy_id/interview", vacancyHandler.GetInterviewResults)
 	}
 

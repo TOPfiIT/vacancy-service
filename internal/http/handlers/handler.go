@@ -59,6 +59,33 @@ func (h *VacancyHandler) GetVacancy(c *gin.Context) {
 	c.JSON(http.StatusOK, vacancy)
 }
 
+func (h *VacancyHandler) GetVacancyFront(c *gin.Context) {
+	vacancyID := c.Param("vacancy_id")
+	if vacancyID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "empty id"})
+		return
+	}
+
+	companyID := middlewares.GetCompanyID(c)
+	if companyID == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "access denied"})
+		return
+	}
+
+	vacancy, err := h.service.GetVacancy(c.Request.Context(), vacancyID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	if vacancy.CompanyID != companyID {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "access denied"})
+		return
+	}
+
+	c.JSON(http.StatusOK, vacancy)
+}
+
 func (h *VacancyHandler) GetVacancies(c *gin.Context) {
 	companyID := middlewares.GetCompanyID(c)
 	if companyID == "" {
