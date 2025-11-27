@@ -33,13 +33,13 @@ func (h *VacancyHandler) CreateVacancy(c *gin.Context) {
 	}
 	req.CompanyID = companyID
 
-	vacancy, err := h.service.CreateVacancy(c.Request.Context(), &req)
+	_, err := h.service.CreateVacancy(c.Request.Context(), &req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusCreated, vacancy)
+	c.JSON(http.StatusCreated, gin.H{"message": "vacancy created successfully"})
 }
 
 func (h *VacancyHandler) GetVacancy(c *gin.Context) {
@@ -54,6 +54,7 @@ func (h *VacancyHandler) GetVacancy(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
+	vacancy.CompanyID = "secret"
 
 	c.JSON(http.StatusOK, vacancy)
 }

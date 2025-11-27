@@ -177,7 +177,6 @@ func (p *PostgresDB) GetInterviewResults(ctx context.Context, vacancyID string) 
 			&result.Surname,
 			&result.ResumeLink,
 			pq.Array(&result.Tasks),
-			pq.Array(&result.Tasks),
 			pq.Array(&result.Solutions),
 			pq.Array(&result.ChatHistory),
 			pq.Array(&result.Metrics),
